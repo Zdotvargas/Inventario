@@ -14,15 +14,24 @@ práctica de Ingeniería de Software (Universidad Manuela Beltrán).
 - RF02 Gestión de usuarios con roles y responsables de custodia.
 - RF03 Registro de despachos a eventos (actualiza ubicación y responsable).
 - RF04 Registro de reingresos con novedades.
-- RF05 Control de estado: operativo / en revisión / de baja.
+- RF05 Control de estado. Se usan los estados del formato de la empresa FOR-ADM-002:
+  ACTIVO (= operativo), EN_MANTENIMIENTO (= en revisión), DE_BAJA, PERDIDO_HURTADO.
 - RF06 Consulta rápida por serial o placa.
 - RF07 Bitácora de movimientos por equipo y reportes.
 
 ## Reglas de negocio
-- RN01: solo se despacha un equipo en estado "operativo".
+- RN01: solo se despacha un equipo en estado ACTIVO.
 - RN02: todo movimiento registra fecha, hora y usuario responsable.
-- RN03: un reingreso con incidencia pasa el equipo a "en revisión" o "de baja".
+- RN03: un reingreso con incidencia pasa el equipo a EN_MANTENIMIENTO, DE_BAJA o PERDIDO_HURTADO.
 - Serial y placa son únicos.
+
+## Modelo de datos
+Basado en el formato FOR-ADM-002 "Hoja de vida del activo". Ver `docs/modelo_er.md`.
+Tablas: activos, categorias, proveedores, ubicaciones (bodegas y eventos; los eventos
+llevan su identificador en `ubicaciones.codigo`, obligatorio y único), usuarios,
+movimientos (historial de traslados), mantenimientos, incidencias.
+Los movimientos no se editan ni se borran; un activo con historial no se borra, se da de baja.
+Cambios de modelo siempre con migración Alembic (`alembic revision --autogenerate`).
 
 ## Convenciones
 - Nombres de tablas, campos y mensajes en español.

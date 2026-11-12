@@ -48,6 +48,26 @@ docker compose down           # apagar (los datos se conservan)
 docker compose down -v        # apagar y BORRAR la base de datos
 ```
 
+## Base de datos
+
+Al arrancar, el contenedor `api` aplica las migraciones (Alembic) y carga los datos
+iniciales (categorías y "Bodega principal") automáticamente.
+
+```powershell
+# Ver las tablas
+docker compose exec db psql -U instech -d inventario -c "\dt"
+
+# Ver la estructura de una tabla
+docker compose exec db psql -U instech -d inventario -c "\d activos"
+
+# Después de cambiar un modelo en backend/app/models/, crear la migración:
+docker compose exec api alembic revision --autogenerate -m "descripcion del cambio"
+docker compose exec api alembic upgrade head
+```
+
+El modelo entidad-relación, basado en el formato FOR-ADM-002, está en
+[`docs/modelo_er.md`](docs/modelo_er.md) (imagen: `docs/modelo_er.png`).
+
 ## Estructura
 
 ```
@@ -56,6 +76,10 @@ backend/
     main.py        punto de entrada de la API
     config.py      configuración desde .env
     database.py    conexión a PostgreSQL
+    models/        tablas (activos, movimientos, mantenimientos, incidencias...)
+    seed.py        datos iniciales
+  alembic/         migraciones de la base de datos
+  entrypoint.sh    migra y carga datos al arrancar
   Dockerfile
   requirements.txt
 frontend/
@@ -64,6 +88,7 @@ frontend/
     main.js
   vite.config.js   redirige /api → FastAPI
   Dockerfile
+docs/              modelo entidad-relación
 docker-compose.yml
 .env.example
 ```
@@ -71,7 +96,7 @@ docker-compose.yml
 ## Plan de desarrollo (Scrum, 12 sprints)
 
 1. Estructura base y Docker ✅
-2. Modelo entidad-relación y migraciones
+2. Modelo entidad-relación y migraciones ✅
 3. API de activos, usuarios y autenticación
 4. Despachos, reingresos, incidencias y reglas de negocio
 5. Interfaz en Vue
