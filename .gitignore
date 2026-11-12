@@ -1,0 +1,23 @@
+# Secretos
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# Node / Vue
+node_modules/
+dist/
+
+# Editor y sistema
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+
+# Datos de Excel de prueba (no subir datos reales de Instech)
+data/*.xlsx

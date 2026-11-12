@@ -1,0 +1,5 @@
+# Mantener finales de línea LF para que los scripts funcionen dentro de Docker (Linux)
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.xlsx binary

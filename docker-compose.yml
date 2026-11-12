@@ -1,0 +1,62 @@
+# Instech - Inventario de activos TI
+# Arquitectura de 3 capas:
+#   web (Vue)  ->  api (FastAPI)  ->  db (PostgreSQL)
+# Levantar todo:   docker compose up --build
+services:
+
+  # ---------- Capa de datos ----------
+  db:
+    image: postgres:16-alpine
+    container_name: inventario_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      TZ: America/Bogota
+    ports:
+      - "${DB_PORT_HOST:-5432}:5432"   # para conectarse con pgAdmin o DBeaver
+    volumes:
+      - db_data:/var/lib/postgresql/data   # los datos sobreviven al apagar
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ---------- Capa de negocio ----------
+  api:
+    build: ./backend
+    container_name: inventario_api
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      WATCHFILES_FORCE_POLLING: "true"   # necesario en Windows para la recarga automática
+      TZ: America/Bogota
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/code        # editas en VS Code y la API se recarga sola
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # ---------- Capa de presentación ----------
+  web:
+    build: ./frontend
+    container_name: inventario_web
+    restart: unless-stopped
+    environment:
+      API_PROXY_TARGET: http://api:8000
+      CHOKIDAR_USEPOLLING: "true"         # recarga automática en Windows
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules     # node_modules queda dentro del contenedor
+    depends_on:
+      - api
+
+volumes:
+  db_data:
